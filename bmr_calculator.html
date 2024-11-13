@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>BMR 계산기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            grid-column: span 2;
+            justify-self: center;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            table, th, td {
+                font-size: 0.9em;
+            }
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BMR 계산기</h1>
+
+        <div class="input-section">
+            <label for="weight">몸무게 (kg):</label>
+            <input type="number" id="weight" required>
+            <label for="height">키 (cm):</label>
+            <input type="number" id="height" required>
+            <label for="age">나이:</label>
+            <input type="number" id="age" required>
+            <label for="bodyFat">체지방률 (%):</label>
+            <input type="number" id="bodyFat" placeholder="(캐치-맥아들 방식)">
+            <button onclick="calculateBMR()">계산하기</button>
+        </div>
+
+        <h2>BMR 계산 결과</h2>
+        <table>
+            <tr>
+                <th>방법</th>
+                <th>결과 (kcal)</th>
+            </tr>
+            <tr>
+                <td>해리스-베네딕트 (남성)</td>
+                <td id="result-male-hb"></td>
+            </tr>
+            <tr>
+                <td>해리스-베네딕트 (여성)</td>
+                <td id="result-female-hb"></td>
+            </tr>
+            <tr>
+                <td>미펄린-세인트 조어 (남성)</td>
+                <td id="result-male-msj"></td>
+            </tr>
+            <tr>
+                <td>미펄린-세인트 조어 (여성)</td>
+                <td id="result-female-msj"></td>
+            </tr>
+            <tr>
+                <td>캐치-맥아들 (제지방 질량 기준)</td>
+                <td id="result-km"></td>
+            </tr>
+        </table>
+
+        <h2>3. 활동 수준에 따른 필요 칼로리</h2>
+        <table>
+            <tr>
+                <th>활동 수준</th>
+                <th>필요 칼로리 (kcal)</th>
+            </tr>
+            <tr>
+                <td>활동이 거의 없음 (BMR × 1.2)</td>
+                <td id="calories-sedentary"></td>
+            </tr>
+            <tr>
+                <td>가벼운 활동 (BMR × 1.375)</td>
+                <td id="calories-light"></td>
+            </tr>
+            <tr>
+                <td>보통 활동 (BMR × 1.55)</td>
+                <td id="calories-moderate"></td>
+            </tr>
+            <tr>
+                <td>높은 활동 (BMR × 1.725)</td>
+                <td id="calories-active"></td>
+            </tr>
+            <tr>
+                <td>아주 높은 활동 (BMR × 1.9)</td>
+                <td id="calories-very-active"></td>
+            </tr>
+        </table>
+
+        <h2>BMR 계산 방식의 장단점 요약</h2>
+        <table>
+            <tr>
+                <th>방법</th>
+                <th>장점</th>
+                <th>단점</th>
+            </tr>
+            <tr>
+                <td>해리스-베네딕트</td>
+                <td>일반 체형에 적합</td>
+                <td>신체 구성 반영 부족</td>
+            </tr>
+            <tr>
+                <td>미펄린-세인트 조어</td>
+                <td>현대인에게 적합한 개선된 공식</td>
+                <td>신체 구성 반영 부족</td>
+            </tr>
+            <tr>
+                <td>캐치-맥아들</td>
+                <td>근육량을 반영하여 정확도 높음</td>
+                <td>체지방률 필요</td>
+            </tr>
+        </table>
+
+        <p>위의 계산 방식들은 간접적으로 에너지 요구량을 측정하는 방법으로, 개인의 체질이나 근육량에 따라 실제 값과 차이가 발생할 수 있습니다. 일반적으로 오차 범위는 ±10% 정도입니다.</p>
+    </div>
+
+    <script>
+        function calculateBMR() {
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const age = parseFloat(document.getElementById("age").value);
+            const bodyFat = parseFloat(document.getElementById("bodyFat").value);
+
+            if (isNaN(weight) || isNaN(height) || isNaN(age)) {
+                alert("모든 입력란을 채워주세요.");
+                return;
+            }
+
+            const maleBMR_HB = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            const femaleBMR_HB = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+
+            const maleBMR_MSJ = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            const femaleBMR_MSJ = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+
+            const leanBodyMass = bodyFat ? weight * (1 - bodyFat / 100) : 0;
+            const bmr_KM = leanBodyMass ? 370 + (21.6 * leanBodyMass) : "체지방률 입력 필요";
+
+            document.getElementById("result-male-hb").innerText = Math.round(maleBMR_HB);
+            document.getElementById("result-female-hb").innerText = Math.round(femaleBMR_HB);
+            document.getElementById("result-male-msj").innerText = Math.round(maleBMR_MSJ);
+            document.getElementById("result-female-msj").innerText = Math.round(femaleBMR_MSJ);
+            document.getElementById("result-km").innerText = leanBodyMass ? Math.round(bmr_KM) : bmr_KM;
+
+            document.getElementById("calories-sedentary").innerText = Math.round(maleBMR_HB * 1.2);
+            document.getElementById("calories-light").innerText = Math.round(maleBMR_HB * 1.375);
+            document.getElementById("calories-moderate").innerText = Math.round(maleBMR_HB * 1.55);
+            document.getElementById("calories-active").innerText = Math.round(maleBMR_HB * 1.725);
+            document.getElementById("calories-very-active").innerText = Math.round(maleBMR_HB * 1.9);
+        }
+    </script>
+</body>
+</html>
